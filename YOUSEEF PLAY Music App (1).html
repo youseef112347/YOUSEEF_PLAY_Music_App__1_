@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YOUSEEF PLAY - Futuristic Glassmorphism Music Player</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            deepBlack: '#080511',
+            violetGlow: '#9d4edd',
+            neonPurple: '#c77dff',
+            darkPurple: '#240046',
+            glassBg: 'rgba(255, 255, 255, 0.03)',
+            glassBorder: 'rgba(199, 125, 255, 0.15)',
+          },
+          fontFamily: {
+            brand: ['Orbitron', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(8, 5, 17, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(157, 78, 221, 0.4);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(199, 125, 255, 0.8);
+    }
+
+    /* Glassmorphism Styles */
+    .glass-card {
+      background: rgba(20, 10, 35, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(199, 125, 255, 0.18);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(157, 78, 221, 0.05);
+    }
+
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(199, 125, 255, 0.2);
+    }
+
+    .glass-btn {
+      background: linear-gradient(135deg, rgba(157, 78, 221, 0.2), rgba(36, 0, 70, 0.4));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(199, 125, 255, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-btn:hover {
+      background: linear-gradient(135deg, rgba(199, 125, 255, 0.4), rgba(157, 78, 221, 0.6));
+      box-shadow: 0 0 20px rgba(157, 78, 221, 0.6);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Glowing Text Effects */
+    .neon-text {
+      text-shadow: 0 0 10px rgba(157, 78, 221, 0.8),
+                   0 0 20px rgba(157, 78, 221, 0.5),
+                   0 0 30px rgba(199, 125, 255, 0.3);
+    }
+
+    .neon-box {
+      box-shadow: 0 0 25px rgba(157, 78, 221, 0.3);
+    }
+
+    /* Record Animation */
+    @keyframes spin-record {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .spinning-record {
+      animation: spin-record 12s linear infinite;
+    }
+
+    .paused-record {
+      animation-play-state: paused;
+    }
+
+    /* Background Ambient Blobs */
+    .blob {
+      position: absolute;
+      filter: blur(90px);
+      border-radius: 50%;
+      z-index: 0;
+      opacity: 0.55;
+      animation: pulse-blob 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse-blob {
+      0% { transform: scale(1) translate(0px, 0px); opacity: 0.4; }
+      50% { transform: scale(1.15) translate(20px, -20px); opacity: 0.65; }
+      100% { transform: scale(0.9) translate(-20px, 15px); opacity: 0.4; }
+    }
+
+    /* Custom Input Range */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 6px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #c77dff;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -5px;
+      box-shadow: 0 0 12px #c77dff, 0 0 20px #9d4edd;
+      transition: all 0.2s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+      background: #ffffff;
+    }
+  </style>
+</head>
+
+<body class="bg-deepBlack text-gray-100 font-sans min-h-screen relative overflow-x-hidden flex flex-col justify-between select-none">
+
+  <!-- Ambient Animated Background Lights -->
+  <div class="blob w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-purple-900 top-[-50px] left-[-50px]"></div>
+  <div class="blob w-[300px] h-[300px] md:w-[450px] md:h-[450px] bg-violet-600 bottom-[-50px] right-[-50px]" style="animation-delay: -4s;"></div>
+  <div class="blob w-[250px] h-[250px] bg-indigo-900 top-[40%] left-[30%]" style="animation-delay: -2s;"></div>
+
+  <!-- Main Container -->
+  <div class="relative z-10 container mx-auto px-4 py-6 max-w-6xl flex-1 flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="glass-card rounded-2xl p-4 md:p-6 mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-700 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+          <i class="fa-solid font-bold fa-compact-disc text-2xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-brand font-black text-2xl md:text-3xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-neonPurple neon-text">
+            YOUSEEF PLAY
+          </h1>
+          <p class="text-xs text-purple-300/70 font-medium">FUTURISTIC AUDIO ENGINE</p>
+        </div>
+      </div>
+
+      <!-- Quick Status & File Selector Input -->
+      <div class="flex items-center space-x-4">
+        <div class="hidden sm:flex items-center space-x-2 glass-pill px-3 py-1.5 rounded-full text-xs text-purple-200">
+          <span id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="status-text">Ready for Files</span>
+        </div>
+
+        <label class="glass-btn px-4 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center space-x-2 cursor-pointer shadow-lg">
+          <i class="fa-solid fa-folder-open text-neonPurple"></i>
+          <span>Open Audio Files</span>
+          <input type="file" id="file-input" multiple accept="audio/*" class="hidden">
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Player Dashboard Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1">
+
+      <!-- Left Column: Now Playing & Controls (7 Cols) -->
+      <div class="lg:col-span-7 flex flex-col space-y-6">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-2 p-1.5 glass-pill rounded-xl">
+          <button id="tab-btn-player" onclick="switchTab('player')" class="flex-1 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all duration-300 bg-purple-700/60 text-white shadow-md">
+            <i class="fa-solid fa-music mr-2"></i>Now Playing
+          </button>
+          <button id="tab-btn-equalizer" onclick="switchTab('equalizer')" class="flex-1 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all duration-300 text-purple-300 hover:text-white">
+            <i class="fa-solid fa-sliders mr-2"></i>Equalizer
+          </button>
+        </div>
+
+        <!-- PLAYER VIEW CONTAINER -->
+        <div id="view-player" class="glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center justify-between min-h-[460px] relative overflow-hidden">
+          
+          <!-- Vinyl Album Artwork Display -->
+          <div class="relative w-56 h-56 sm:w-64 sm:h-64 my-4 flex items-center justify-center">
+            <!-- Glowing Ring Outer -->
+            <div id="album-glow" class="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 blur-xl opacity-30 transition-all duration-700"></div>
+            
+            <!-- Vinyl Disc Holder -->
+            <div id="album-art" class="relative w-full h-full rounded-full bg-gradient-to-tr from-gray-950 via-gray-900 to-gray-950 border-4 border-purple-500/30 flex items-center justify-center shadow-2xl spinning-record paused-record">
+              <!-- Vinyl Grooves -->
+              <div class="absolute inset-3 rounded-full border border-white/5"></div>
+              <div class="absolute inset-7 rounded-full border border-white/5"></div>
+              <div class="absolute inset-12 rounded-full border border-white/5"></div>
+              <div class="absolute inset-16 rounded-full border border-white/5"></div>
+
+              <!-- Center Album Cover Image / Icon Placeholder -->
+              <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-purple-900 to-darkPurple border-2 border-neonPurple flex flex-col items-center justify-center text-center p-2 shadow-inner z-10 overflow-hidden">
+                <i id="album-icon" class="fa-solid fa-record-vinyl text-4xl text-neonPurple mb-1"></i>
+                <span id="album-disc-text" class="text-[9px] font-brand font-bold text-purple-200 tracking-wider uppercase truncate max-w-full">YOUSEEF PLAY</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Song Info -->
+          <div class="text-center w-full my-2">
+            <h2 id="current-title" class="text-lg md:text-xl font-bold text-white tracking-wide truncate px-4">
+              No Track Selected
+            </h2>
+            <p id="current-artist" class="text-sm text-purple-300/70 font-medium truncate mt-1">
+              Select files to start listening
+            </p>
+          </div>
+
+          <!-- Realtime Audio Spectrum Visualizer Canvas -->
+          <div class="w-full h-12 my-2 flex items-center justify-center">
+            <canvas id="visualizer" class="w-full h-full rounded-lg"></canvas>
+          </div>
+
+          <!-- Seek Bar Progress Section -->
+          <div class="w-full space-y-1.5">
+            <div class="relative flex items-center">
+              <input type="range" id="seek-slider" min="0" max="100" value="0" class="w-full">
+            </div>
+            <div class="flex justify-between text-xs font-semibold text-purple-300/60 px-1">
+              <span id="current-time">00:00</span>
+              <span id="total-duration">00:00</span>
+            </div>
+          </div>
+
+          <!-- Playback Action Controls -->
+          <div class="flex items-center justify-between w-full max-w-md pt-4">
+            <!-- Shuffle Button -->
+            <button id="btn-shuffle" onclick="toggleShuffle()" class="text-purple-300/60 hover:text-neonPurple transition-colors text-lg p-2" title="Shuffle">
+              <i class="fa-solid fa-shuffle"></i>
+            </button>
+
+            <!-- Previous Track -->
+            <button onclick="playPrev()" class="glass-btn w-12 h-12 rounded-2xl flex items-center justify-center text-white text-lg">
+              <i class="fa-solid fa-backward-step"></i>
+            </button>
+
+            <!-- Play / Pause Main Button -->
+            <button id="btn-play-pause" onclick="togglePlayPause()" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 via-neonPurple to-purple-400 text-white text-2xl flex items-center justify-center shadow-lg shadow-purple-600/50 hover:scale-105 active:scale-95 transition-all">
+              <i id="play-icon" class="fa-solid fa-play ml-1"></i>
+            </button>
+
+            <!-- Next Track -->
+            <button onclick="playNext()" class="glass-btn w-12 h-12 rounded-2xl flex items-center justify-center text-white text-lg">
+              <i class="fa-solid fa-forward-step"></i>
+            </button>
+
+            <!-- Repeat Button -->
+            <button id="btn-repeat" onclick="toggleRepeat()" class="text-purple-300/60 hover:text-neonPurple transition-colors text-lg p-2" title="Repeat">
+              <i class="fa-solid fa-repeat"></i>
+            </button>
+          </div>
+
+          <!-- Volume Slider Bar -->
+          <div class="flex items-center space-x-3 w-full max-w-xs pt-4">
+            <button id="btn-mute" onclick="toggleMute()" class="text-purple-300 hover:text-white text-sm">
+              <i id="volume-icon" class="fa-solid fa-volume-high"></i>
+            </button>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" class="w-full">
+          </div>
+
+        </div>
+
+        <!-- EQUALIZER VIEW CONTAINER (Hidden by Default) -->
+        <div id="view-equalizer" class="glass-card rounded-3xl p-6 md:p-8 hidden flex-col justify-between min-h-[460px]">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="font-brand text-lg text-neonPurple font-bold">10-BAND GRAPHIC EQUALIZER</h3>
+              <button onclick="resetEQ()" class="text-xs text-purple-300 hover:text-white glass-pill px-3 py-1 rounded-full">Reset EQ</button>
+            </div>
+            
+            <!-- EQ Fader Sliders Grid -->
+            <div class="grid grid-cols-5 sm:grid-cols-10 gap-2 h-56 items-center justify-items-center">
+              <!-- Preset Band Faders -->
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">60Hz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36 border-none" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">170Hz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">310Hz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">600Hz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">1kHz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">3kHz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">6kHz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">12kHz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">14kHz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+              <div class="flex flex-col items-center h-full justify-between">
+                <span class="text-[10px] text-purple-300/70">16kHz</span>
+                <input type="range" min="-12" max="12" value="0" class="eq-band h-36" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                <span class="text-[10px] font-bold text-neonPurple">0dB</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Presets Buttons -->
+          <div class="mt-6">
+            <span class="text-xs text-purple-300/70 block mb-2 font-medium">Quick Sound Presets:</span>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="applyPreset('flat')" class="glass-btn text-xs px-3 py-1.5 rounded-lg text-white">Flat</button>
+              <button onclick="applyPreset('bass')" class="glass-btn text-xs px-3 py-1.5 rounded-lg text-white">Bass Boost</button>
+              <button onclick="applyPreset('vocal')" class="glass-btn text-xs px-3 py-1.5 rounded-lg text-white">Vocal Boost</button>
+              <button onclick="applyPreset('treble')" class="glass-btn text-xs px-3 py-1.5 rounded-lg text-white">Treble Boost</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Local Music Playlist Library (5 Cols) -->
+      <div class="lg:col-span-5 flex flex-col h-full">
+        <div class="glass-card rounded-3xl p-6 flex flex-col h-full max-h-[620px]">
+          
+          <!-- Playlist Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-purple-500/20">
+            <div>
+              <h2 class="font-brand text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-ul text-neonPurple"></i> Local Library
+              </h2>
+              <span id="playlist-count" class="text-xs text-purple-300/60">0 tracks loaded</span>
+            </div>
+
+            <!-- Clear Playlist Button -->
+            <button onclick="clearPlaylist()" class="text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-trash-can"></i> Clear
+            </button>
+          </div>
+
+          <!-- Playlist Items Container -->
+          <div id="playlist-container" class="flex-1 overflow-y-auto space-y-2 py-4 my-2 pr-1">
+            <!-- Empty State Placeholder -->
+            <div id="empty-state" class="flex flex-col items-center justify-center h-64 text-center p-6 text-purple-300/50">
+              <div class="w-16 h-16 rounded-full glass-pill flex items-center justify-center mb-3">
+                <i class="fa-solid fa-file-audio text-2xl text-neonPurple"></i>
+              </div>
+              <p class="text-sm font-semibold text-gray-300">Your Library is Empty</p>
+              <p class="text-xs mt-1 max-w-xs">Click on "Open Audio Files" button above to import music files from your device.</p>
+            </div>
+          </div>
+
+          <!-- Drag and Drop Dropzone Footer Hint -->
+          <div id="drop-zone" class="border-2 border-dashed border-purple-500/30 rounded-2xl p-4 text-center transition-all hover:border-neonPurple/60">
+            <p class="text-xs text-purple-300/70">
+              <i class="fa-solid fa-cloud-arrow-up mr-1 text-neonPurple"></i> Or drag & drop audio files anywhere here
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Copyright -->
+    <footer class="mt-8 text-center text-xs text-purple-300/40">
+      <p>YOUSEEF PLAY &copy; 2026. Futuristic Local Media Player Experience.</p>
+    </footer>
+
+  </div>
+
+  <!-- Audio Element (Hidden Core Engine) -->
+  <audio id="audio-engine" class="hidden"></audio>
+
+  <!-- Application Logic JavaScript -->
+  <script>
+    // Global App State Variables
+    let playlist = [];
+    let currentTrackIndex = -1;
+    let isPlaying = false;
+    let isShuffle = false;
+    let isRepeat = false;
+
+    // Web Audio API Context & Visualizer Nodes
+    let audioCtx = null;
+    let audioSource = null;
+    let analyser = null;
+    let visualizerAnimationId = null;
+
+    // DOM Elements
+    const audioEngine = document.getElementById('audio-engine');
+    const fileInput = document.getElementById('file-input');
+    const playlistContainer = document.getElementById('playlist-container');
+    const emptyState = document.getElementById('empty-state');
+    const playlistCount = document.getElementById('playlist-count');
+    
+    // UI Player Elements
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const playIcon = document.getElementById('play-icon');
+    const currentTitle = document.getElementById('current-title');
+    const currentArtist = document.getElementById('current-artist');
+    const albumArt = document.getElementById('album-art');
+    const albumGlow = document.getElementById('album-glow');
+    const albumDiscText = document.getElementById('album-disc-text');
+    const seekSlider = document.getElementById('seek-slider');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalDurationEl = document.getElementById('total-duration');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeIcon = document.getElementById('volume-icon');
+    const visualizerCanvas = document.getElementById('visualizer');
+    const canvasCtx = visualizerCanvas.getContext('2d');
+
+    // Initialize Canvas Dimensions
+    function resizeCanvas() {
+      visualizerCanvas.width = visualizerCanvas.offsetWidth;
+      visualizerCanvas.height = visualizerCanvas.offsetHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Setup Web Audio Context (On first user interaction to comply with browser policy)
+    function initAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+
+        try {
+          audioSource = audioCtx.createMediaElementSource(audioEngine);
+          audioSource.connect(analyser);
+          analyser.connect(audioCtx.destination);
+        } catch (err) {
+          console.warn("Audio source already initialized or restricted:", err);
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Local Audio File Import Handling
+    fileInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+    });
+
+    // Drag and Drop Handling
+    const dropZone = document.body;
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFiles(e.dataTransfer.files);
+      }
+    });
+
+    // Handle Imported Files
+    function handleFiles(files) {
+      const validAudioFiles = Array.from(files).filter(file => file.type.startsWith('audio/'));
+
+      if (validAudioFiles.length === 0) return;
+
+      validAudioFiles.forEach(file => {
+        const track = {
+          id: Date.now() + Math.random().toString(36).substr(2, 9),
+          title: cleanFileName(file.name),
+          artist: 'Local Device File',
+          fileObject: file,
+          url: URL.createObjectURL(file)
+        };
+        playlist.push(track);
+      });
+
+      updatePlaylistUI();
+
+      // If no track is currently playing, start playing the first newly added track
+      if (currentTrackIndex === -1 && playlist.length > 0) {
+        loadTrack(0, true);
+      }
+    }
+
+    // Clean Track Title from Filename Extension
+    function cleanFileName(filename) {
+      return filename.replace(/\.[^/.]+$/, "");
+    }
+
+    // Render Playlist UI
+    function updatePlaylistUI() {
+      playlistCount.textContent = `${playlist.length} track${playlist.length !== 1 ? 's' : ''} loaded`;
+
+      if (playlist.length === 0) {
+        emptyState.style.display = 'flex';
+        playlistContainer.innerHTML = '';
+        playlistContainer.appendChild(emptyState);
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      playlistContainer.innerHTML = '';
+
+      playlist.forEach((track, index) => {
+        const isCurrent = index === currentTrackIndex;
+        const item = document.createElement('div');
+        item.className = `glass-pill p-3 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-300 ${
+          isCurrent 
+            ? 'border-neonPurple bg-purple-900/40 shadow-lg shadow-purple-900/30' 
+            : 'hover:bg-purple-900/20 hover:border-purple-500/40'
+        }`;
+
+        item.onclick = () => {
+          loadTrack(index, true);
+        };
+
+        item.innerHTML = `
+          <div class="flex items-center space-x-3 truncate mr-2">
+            <div class="w-9 h-9 rounded-xl ${isCurrent ? 'bg-neonPurple text-black' : 'bg-purple-950 text-purple-300'} flex items-center justify-center shrink-0 font-bold text-xs">
+              ${isCurrent && isPlaying ? '<i class="fa-solid fa-waveform animate-bounce"></i>' : index + 1}
+            </div>
+            <div class="truncate">
+              <h4 class="text-xs sm:text-sm font-semibold text-white truncate">${escapeHtml(track.title)}</h4>
+              <p class="text-[10px] text-purple-300/60 truncate">${escapeHtml(track.artist)}</p>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation(); removeTrack(${index})" class="text-purple-300/40 hover:text-red-400 p-1.5 transition-colors text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        `;
+
+        playlistContainer.appendChild(item);
+      });
+    }
+
+    // Safety HTML Escaping
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    // Remove Track from Playlist
+    function removeTrack(index) {
+      if (index === currentTrackIndex) {
+        audioEngine.pause();
+        isPlaying = false;
+        if (playlist.length > 1) {
+          playlist.splice(index, 1);
+          const nextIdx = index >= playlist.length ? 0 : index;
+          loadTrack(nextIdx, false);
+        } else {
+          playlist = [];
+          currentTrackIndex = -1;
+          resetPlayerUI();
+          updatePlaylistUI();
+        }
+      } else {
+        if (index < currentTrackIndex) {
+          currentTrackIndex--;
+        }
+        playlist.splice(index, 1);
+        updatePlaylistUI();
+      }
+    }
+
+    // Clear Whole Playlist
+    function clearPlaylist() {
+      audioEngine.pause();
+      playlist = [];
+      currentTrackIndex = -1;
+      isPlaying = false;
+      resetPlayerUI();
+      updatePlaylistUI();
+    }
+
+    // Reset Player Display
+    function resetPlayerUI() {
+      currentTitle.textContent = "No Track Selected";
+      currentArtist.textContent = "Select files to start listening";
+      albumDiscText.textContent = "YOUSEEF PLAY";
+      playIcon.className = "fa-solid fa-play ml-1";
+      albumArt.classList.add('paused-record');
+      albumGlow.style.opacity = "0.3";
+      seekSlider.value = 0;
+      currentTimeEl.textContent = "00:00";
+      totalDurationEl.textContent = "00:00";
+    }
+
+    // Load Specific Track into Audio Engine
+    function loadTrack(index, autoPlay = true) {
+      if (index < 0 || index >= playlist.length) return;
+
+      currentTrackIndex = index;
+      const track = playlist[index];
+
+      audioEngine.src = track.url;
+      currentTitle.textContent = track.title;
+      currentArtist.textContent = track.artist;
+      albumDiscText.textContent = track.title;
+
+      updatePlaylistUI();
+
+      if (autoPlay) {
+        initAudioContext();
+        audioEngine.play().then(() => {
+          isPlaying = true;
+          updatePlayPauseState();
+          startVisualizer();
+        }).catch(err => console.log("Autoplay error:", err));
+      }
+    }
+
+    // Toggle Play/Pause Logic
+    function togglePlayPause() {
+      if (playlist.length === 0) return;
+
+      initAudioContext();
+
+      if (currentTrackIndex === -1) {
+        loadTrack(0, true);
+        return;
+      }
+
+      if (isPlaying) {
+        audioEngine.pause();
+        isPlaying = false;
+      } else {
+        audioEngine.play();
+        isPlaying = true;
+        startVisualizer();
+      }
+      updatePlayPauseState();
+    }
+
+    // Synchronize Play/Pause Button Visuals
+    function updatePlayPauseState() {
+      if (isPlaying) {
+        playIcon.className = "fa-solid fa-pause";
+        albumArt.classList.remove('paused-record');
+        albumGlow.style.opacity = "0.8";
+      } else {
+        playIcon.className = "fa-solid fa-play ml-1";
+        albumArt.classList.add('paused-record');
+        albumGlow.style.opacity = "0.3";
+      }
+      updatePlaylistUI();
+    }
+
+    // Play Next Track
+    function playNext() {
+      if (playlist.length === 0) return;
+
+      if (isShuffle) {
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * playlist.length);
+        } while (randomIndex === currentTrackIndex && playlist.length > 1);
+        loadTrack(randomIndex, true);
+      } else {
+        let nextIndex = currentTrackIndex + 1;
+        if (nextIndex >= playlist.length) nextIndex = 0;
+        loadTrack(nextIndex, true);
+      }
+    }
+
+    // Play Previous Track
+    function playPrev() {
+      if (playlist.length === 0) return;
+
+      let prevIndex = currentTrackIndex - 1;
+      if (prevIndex < 0) prevIndex = playlist.length - 1;
+      loadTrack(prevIndex, true);
+    }
+
+    // Shuffle Toggle
+    function toggleShuffle() {
+      isShuffle = !isShuffle;
+      const btn = document.getElementById('btn-shuffle');
+      btn.style.color = isShuffle ? '#c77dff' : 'rgba(216, 180, 254, 0.6)';
+    }
+
+    // Repeat Toggle
+    function toggleRepeat() {
+      isRepeat = !isRepeat;
+      audioEngine.loop = isRepeat;
+      const btn = document.getElementById('btn-repeat');
+      btn.style.color = isRepeat ? '#c77dff' : 'rgba(216, 180, 254, 0.6)';
+    }
+
+    // Audio Engine Track End Event Listener
+    audioEngine.addEventListener('ended', () => {
+      if (!isRepeat) {
+        playNext();
+      }
+    });
+
+    // Time Progress Updates
+    audioEngine.addEventListener('timeupdate', () => {
+      if (isNaN(audioEngine.duration)) return;
+
+      const progress = (audioEngine.currentTime / audioEngine.duration) * 100;
+      seekSlider.value = progress || 0;
+
+      currentTimeEl.textContent = formatTime(audioEngine.currentTime);
+      totalDurationEl.textContent = formatTime(audioEngine.duration);
+    });
+
+    // Seek Bar Input Event
+    seekSlider.addEventListener('input', (e) => {
+      if (isNaN(audioEngine.duration) || playlist.length === 0) return;
+      const seekTo = (e.target.value / 100) * audioEngine.duration;
+      audioEngine.currentTime = seekTo;
+    });
+
+    // Volume Adjustment Input
+    volumeSlider.addEventListener('input', (e) => {
+      const vol = e.target.value;
+      audioEngine.volume = vol;
+      updateVolumeIcon(vol);
+    });
+
+    // Mute Logic Toggle
+    function toggleMute() {
+      if (audioEngine.volume > 0) {
+        audioEngine.dataset.lastVol = audioEngine.volume;
+        audioEngine.volume = 0;
+        volumeSlider.value = 0;
+      } else {
+        const restoredVol = audioEngine.dataset.lastVol || 0.8;
+        audioEngine.volume = restoredVol;
+        volumeSlider.value = restoredVol;
+      }
+      updateVolumeIcon(audioEngine.volume);
+    }
+
+    function updateVolumeIcon(vol) {
+      if (vol == 0) {
+        volumeIcon.className = "fa-solid fa-volume-xmark text-red-400";
+      } else if (vol < 0.5) {
+        volumeIcon.className = "fa-solid fa-volume-low text-purple-300";
+      } else {
+        volumeIcon.className = "fa-solid fa-volume-high text-purple-300";
+      }
+    }
+
+    // Format Seconds to MM:SS
+    function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = Math.floor(seconds % 60);
+      return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+    }
+
+    // Real-Time Audio Spectrum Visualizer Rendering Loop
+    function startVisualizer() {
+      if (!analyser) return;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      function draw() {
+        if (!isPlaying) {
+          canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+          return;
+        }
+
+        visualizerAnimationId = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+
+        canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+
+        const barWidth = (visualizerCanvas.width / bufferLength) * 1.8;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * visualizerCanvas.height;
+
+          // Gradient for Visualizer Bars
+          const gradient = canvasCtx.createLinearGradient(0, visualizerCanvas.height, 0, 0);
+          gradient.addColorStop(0, 'rgba(157, 78, 221, 0.2)');
+          gradient.addColorStop(0.5, 'rgba(199, 125, 255, 0.8)');
+          gradient.addColorStop(1, '#ffffff');
+
+          canvasCtx.fillStyle = gradient;
+          canvasCtx.beginPath();
+          canvasCtx.roundRect(x, visualizerCanvas.height - barHeight, barWidth, barHeight, [4, 4, 0, 0]);
+          canvasCtx.fill();
+
+          x += barWidth + 3;
+        }
+      }
+
+      draw();
+    }
+
+    // Switch View Tabs (Now Playing vs Equalizer)
+    function switchTab(tabName) {
+      const viewPlayer = document.getElementById('view-player');
+      const viewEqualizer = document.getElementById('view-equalizer');
+      const tabBtnPlayer = document.getElementById('tab-btn-player');
+      const tabBtnEqualizer = document.getElementById('tab-btn-equalizer');
+
+      if (tabName === 'player') {
+        viewPlayer.classList.remove('hidden');
+        viewEqualizer.classList.add('hidden');
+        viewEqualizer.classList.remove('flex');
+
+        tabBtnPlayer.className = "flex-1 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all duration-300 bg-purple-700/60 text-white shadow-md";
+        tabBtnEqualizer.className = "flex-1 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all duration-300 text-purple-300 hover:text-white";
+      } else {
+        viewPlayer.classList.add('hidden');
+        viewEqualizer.classList.remove('hidden');
+        viewEqualizer.classList.add('flex');
+
+        tabBtnEqualizer.className = "flex-1 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all duration-300 bg-purple-700/60 text-white shadow-md";
+        tabBtnPlayer.className = "flex-1 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all duration-300 text-purple-300 hover:text-white";
+      }
+    }
+
+    // Reset Equalizer Faders
+    function resetEQ() {
+      const bands = document.querySelectorAll('.eq-band');
+      bands.forEach(band => band.value = 0);
+    }
+
+    // Apply Audio EQ Presets
+    function applyPreset(type) {
+      const bands = document.querySelectorAll('.eq-band');
+      const presets = {
+        flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        bass: [7, 6, 5, 2, 0, 0, 1, 2, 3, 4],
+        vocal: [-2, -1, 1, 4, 5, 5, 4, 2, 0, -1],
+        treble: [-3, -2, -1, 0, 1, 3, 5, 7, 8, 8]
+      };
+
+      if (presets[type]) {
+        presets[type].forEach((val, i) => {
+          if (bands[i]) bands[i].value = val;
+        });
+      }
+    }
+  </script>
+</body>
+</html>
